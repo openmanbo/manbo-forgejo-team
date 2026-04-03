@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "tavily": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tavily-mcp"
+      ]
+    },
+    "forgejo": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@openmanbo/forgejo-mcp"
+      ]
+    }
+  }
+}
