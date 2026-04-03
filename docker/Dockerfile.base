@@ -91,4 +91,7 @@ RUN useradd -m -s /bin/bash claude-user && \
     chown -R claude-user:claude-user /agents && \
     chown -R claude-user:claude-user /workspace
 
+# 创建 .gitignore 忽略状态文件
+RUN echo ".agent_state.json" > /workspace/.gitignore
+
 ENTRYPOINT ["/bin/bash"]

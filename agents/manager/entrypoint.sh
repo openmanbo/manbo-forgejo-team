@@ -63,6 +63,23 @@ cp /root/.claude/mcp.json /root/.config/claude-code/settings.json
 cp /root/.claude/mcp.json /home/claude-user/.claude/mcp.json
 chown claude-user:claude-user /home/claude-user/.claude/mcp.json
 
+# 创建/读取 Agent 状态文件
+AGENT_STATE_FILE="/workspace/.agent_state.json"
+if [ ! -f "$AGENT_STATE_FILE" ]; then
+    cat > "$AGENT_STATE_FILE" <<EOF
+{
+  "agent_id": "${AGENT_ID:-manager}",
+  "role": "manager",
+  "started_at": "$(date -Iseconds)",
+  "last_cycle": null,
+  "processed_issues": [],
+  "processed_prs": [],
+  "notes": []
+}
+EOF
+fi
+chown claude-user:claude-user "$AGENT_STATE_FILE"
+
 # 输出启动信息
 echo ""
 echo "Forgejo URL: $FORGEJO_URL"
@@ -71,6 +88,7 @@ echo "Git User: $GIT_USER_NAME <$GIT_USER_EMAIL>"
 echo "Agent Role: manager"
 echo "Mode: automatic"
 echo "MCP Config: /root/.claude/mcp.json"
+echo "Agent State: $AGENT_STATE_FILE"
 echo ""
 echo "Starting main loop... Checking for new issues every 60 seconds."
 echo ""
@@ -86,6 +104,10 @@ export ANTHROPIC_MODEL='${ANTHROPIC_MODEL:-}'
 cd /workspace && \
 claude --mcp-config /home/claude-user/.claude/mcp.json --dangerously-skip-permissions -p '
 你是 $AGENT_ID，Manager Agent。
+
+**状态文件**: /workspace/.agent_state.json
+- 执行前读取此文件，了解之前的处理历史和上下文
+- 执行后更新此文件，记录本次处理的内容
 
 **首次启动任务**：
 1. 检查 ORGANIZATION.md 是否存在
@@ -110,7 +132,7 @@ claude --mcp-config /home/claude-user/.claude/mcp.json --dangerously-skip-permis
 - 审查通过后合并 PR
 - 更新关联 Issue 状态
 
-执行完毕后，输出处理结果摘要。
+执行完毕后，输出处理结果摘要并更新状态文件。
 '
 "
 
