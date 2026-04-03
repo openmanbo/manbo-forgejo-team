@@ -1,0 +1,62 @@
+services:
+  # Manager Agent - 1 份
+  manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.base
+    container_name: manbo-manager
+    environment:
+      - FORGEJO_URL=${FORGEJO_URL}
+      - FORGEJO_TOKEN=${MANAGER_FORGEJO_TOKEN}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - AGENT_ID=${MANAGER_AGENT_ID:-manager}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    volumes:
+      - ../workspace/manager:/workspace
+      - ../agents/manager:/agents/manager:ro
+    working_dir: /workspace
+    entrypoint: /agents/manager/entrypoint.sh
+    restart: unless-stopped
+
+  # Worker Agent - 2 份
+  worker-1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.base
+    container_name: manbo-worker-1
+    environment:
+      - FORGEJO_URL=${FORGEJO_URL}
+      - FORGEJO_TOKEN=${WORKER_1_FORGEJO_TOKEN}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - AGENT_ID=${WORKER_1_AGENT_ID:-worker-1}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    volumes:
+      - ../workspace/worker-1:/workspace
+      - ../agents/worker:/agents/worker:ro
+    working_dir: /workspace
+    entrypoint: /agents/worker/entrypoint.sh
+    restart: unless-stopped
+
+  worker-2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.base
+    container_name: manbo-worker-2
+    environment:
+      - FORGEJO_URL=${FORGEJO_URL}
+      - FORGEJO_TOKEN=${WORKER_2_FORGEJO_TOKEN}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - AGENT_ID=${WORKER_2_AGENT_ID:-worker-2}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    volumes:
+      - ../workspace/worker-2:/workspace
+      - ../agents/worker:/agents/worker:ro
+    working_dir: /workspace
+    entrypoint: /agents/worker/entrypoint.sh
+    restart: unless-stopped

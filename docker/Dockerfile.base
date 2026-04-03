@@ -1,0 +1,94 @@
+# Agent Team 基础镜像
+# 提供 Claude Code 和 MCP 运行环境，预装 Go/Rust/Node.js 及对应 LSP
+
+FROM debian:bookworm-slim AS base
+
+# ==============================
+# 系统基础工具
+# ==============================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    ca-certificates \
+    pkg-config \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ==============================
+# Node.js
+# ==============================
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# ==============================
+# Go 语言环境
+# ==============================
+ARG GO_VERSION=1.23.0
+RUN curl -fsSL https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz | tar -C /usr/local -xz
+
+ENV GOPATH=/go
+ENV GOROOT=/usr/local/go
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+ENV GOPROXY=https://goproxy.io,direct
+
+# 安装 Go LSP (gopls)
+RUN go install golang.org/x/tools/gopls@latest
+
+# ==============================
+# Rust 语言环境
+# ==============================
+ARG RUST_VERSION=1.94.1
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain ${RUST_VERSION} --profile minimal
+
+ENV CARGO_HOME=/root/.cargo
+ENV RUSTUP_HOME=/root/.rustup
+ENV PATH=$PATH:$CARGO_HOME/bin
+
+# 安装 Rust LSP (rust-analyzer)
+RUN rustup component add rust-analyzer
+
+# ==============================
+# Node.js LSP
+# ==============================
+RUN npm install -g typescript typescript-language-server
+
+# ==============================
+# Claude Code CLI
+# ==============================
+RUN npm install -g @anthropic-ai/claude-code
+
+# ==============================
+# Git 配置
+# ==============================
+RUN git config --global user.name "manbo-agent" && \
+    git config --global user.email "agent@noreply.localhost"
+
+# ==============================
+# 工作目录
+# ==============================
+WORKDIR /workspace
+
+# 复制 skills 目录
+COPY ../.claude/skills /root/.claude/skills
+
+# 复制 agents 目录并设置权限
+COPY ../agents /agents
+
+# 复制 MCP 配置
+COPY ../.mcp.json /root/.mcp.json
+
+# 复制组织架构文件
+COPY ../ORGANIZATION.md /workspace/ORGANIZATION.md
+
+# 创建非 root 用户给 Claude 使用
+RUN useradd -m -s /bin/bash claude-user && \
+    mkdir -p /root/.claude /home/claude-user/.claude && \
+    cp -r /root/.claude/skills /home/claude-user/.claude/ && \
+    chown -R claude-user:claude-user /home/claude-user/.claude && \
+    chmod +x /agents/manager/entrypoint.sh /agents/worker/entrypoint.sh && \
+    chown -R claude-user:claude-user /agents && \
+    chown -R claude-user:claude-user /workspace
+
+ENTRYPOINT ["/bin/bash"]

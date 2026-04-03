@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm search:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker info:*)",
+      "Bash(chmod +x:*)",
+      "Bash(docker exec manbo-manager:*)"
+    ]
+  },
+  "disabledMcpjsonServers": [
+    "tavily",
+    "forgejo"
+  ]
+}

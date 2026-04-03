@@ -1,2 +1,6 @@
+# 环境配置
 .env
 !settings.local.json
+
+# 运行时生成的工作目录
+workspace/
