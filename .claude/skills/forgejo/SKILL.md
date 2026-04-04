@@ -11,34 +11,21 @@ Forgejo MCP 提供与 Forgejo 实例交互的能力，支持 Issues、Pull Reque
 
 ---
 
-## 认证配置
+## 获取 Git Remote 配置
 
-### 环境变量
+使用 `get_git_token` 工具获取 URL 和 Token，用于 git 操作：
 
 ```bash
-FORGEJO_URL=https://codeberg.org        # Forgejo 实例 URL
-FORGEJO_TOKEN=<personal-access-token>   # 个人访问令牌
+get_git_token
 ```
 
-### 生成 Token
-
-1. 访问 `<forgejo-instance>/user/settings/applications`
-2. 创建个人访问令牌（Personal Access Token）
-3. 选择所需权限范围（至少需要 `read:issue` 用于搜索）
-
-### 获取认证信息
-
-使用资源 `forgejo://server/info` 获取当前认证信息：
-
+返回：
 ```json
 {
   "url": "https://<forgejo-host>",
-  "token": "<access-token>",
-  "user": { "login": "<username>", ... }
+  "token": "<access-token>"
 }
 ```
-
-或使用 `get_git_token` 工具获取 URL 和 Token，用于 git 操作。
 
 ---
 
@@ -48,8 +35,6 @@ FORGEJO_TOKEN=<personal-access-token>   # 个人访问令牌
 
 | 工具 | 说明 |
 |------|------|
-| `get_user` | 获取当前认证用户信息 |
-| `get_user_info` | 获取任意用户的公开资料 |
 | `get_git_token` | 获取 Git 认证所需的 URL 和 Token |
 
 ### 搜索与发现
@@ -81,7 +66,7 @@ FORGEJO_TOKEN=<personal-access-token>   # 个人访问令牌
 | 工具 | 说明 |
 |------|------|
 | `list_pull_requests` | 列出仓库的 PRs |
-| `get_pull_request` | 获取单个 PR 详情 |
+| `get_pull_request` | 获取单个 PR 详情（包括合并状态、是否冲突） |
 | `create_pull_request` | 创建新 PR |
 | `edit_pull_request` | 编辑 PR（标题、内容、状态、分支等） |
 | `merge_pull_request` | 合并 PR（支持 merge/squash/rebase） |
@@ -239,6 +224,43 @@ search_issues created=true
 5. `list_pull_request_reviews` 查看已有评审
 6. `create_pull_request_review` 提交评审意见
 
+### 合并 PR 工作流
+
+**重要：合并前必须检查 PR 状态！**
+
+1. **检查 PR 详情**
+   ```bash
+   get_pull_request number=<PR 号> owner=<所有者> repo=<仓库名>
+   ```
+   关键字段：
+   - `mergeable` - 是否可以合并（true/false）
+   - `merged` - 是否已合并
+   - `state` - PR 状态（open/closed）
+   - `merge_base` - 合并基准
+
+2. **判断是否可合并**
+   - `mergeable: true` → 可以合并
+   - `mergeable: false` → 存在冲突，需要先更新分支
+   - `merged: true` → 已合并，无需操作
+   - `state: closed` → 已关闭，无法合并
+
+3. **处理冲突**（如果不可合并）
+   ```bash
+   update_pull_request_branch number=<PR 号>
+   ```
+   然后重新检查 `get_pull_request` 直到 `mergeable: true`
+
+4. **执行合并**
+   ```bash
+   merge_pull_request number=<PR 号> merge_style=merge
+   ```
+   merge_style 可选：`merge` / `squash` / `rebase`
+
+5. **验证合并结果**
+   ```bash
+   get_pull_request number=<PR 号>  # 确认 merged: true
+   ```
+
 ### 贡献代码工作流
 
 1. `search_issues` (assigned=true) 查找分配给自己的 issue
@@ -246,21 +268,18 @@ search_issues created=true
 3. 本地开发并提交代码
 4. `create_pull_request` 创建 PR
 5. 根据评审意见更新代码
-6. `merge_pull_request` 合并（需权限）
+6. **等待审查和合并**（由审查方执行合并，不是 PR 作者）
+   - 审查方批准 PR 后，由审查方或 Manager 执行 `merge_pull_request`
+   - PR 作者不应自己合并自己的 PR
 
 ---
 
 ## 最佳实践
 
-1. **认证检查**：开始工作流前调用 `get_user` 确认身份
-2. **Git 操作**：使用 `get_git_token` 获取 token 用于 git clone/push
-3. **精准搜索**：使用 `search_issues` 的过滤器（assigned、mentioned、review_requested）缩小范围
-4. **分页处理**：列表工具支持 `page` 和 `limit` 参数，注意结果截断
-5. **状态追踪**：使用 `mark_notification_read` 标记已处理的通知
+1. **Git 操作**：使用 `get_git_token` 获取 token 用于 git clone/push
+2. **精准搜索**：使用 `search_issues` 的过滤器（assigned、mentioned、review_requested）缩小范围
+3. **分页处理**：列表工具支持 `page` 和 `limit` 参数，注意结果截断
+4. **状态追踪**：使用 `mark_notification_read` 标记已处理的通知
+5. **合并前检查**：使用 `get_pull_request` 检查 `mergeable` 字段，确认无冲突后再合并
 
 ---
-
-## 资源
-
-- Resource URI: `forgejo://server/info`
-- 功能：返回当前连接的 Forgejo 实例 URL、访问令牌和认证用户详情

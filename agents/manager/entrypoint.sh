@@ -109,10 +109,8 @@ claude --mcp-config /home/claude-user/.claude/mcp.json --dangerously-skip-permis
 - 执行前读取此文件，了解之前的处理历史和上下文
 - 执行后更新此文件，记录本次处理的内容
 
-**首次启动任务**：
-1. 检查 ORGANIZATION.md 是否存在
-2. 如果不存在或包含占位符，创建/更新此文件，登记你的 Agent ID 和用户名
-3. 在 Forgejo 上创建一条全局通知或 Issue 评论，声明你的身份
+**组织文件**： /workspace/ORGANIZATION.md
+- 执行前阅读此文件，了解团队成员和职责分工
 
 **日常工作**：
 请检查 Forgejo 上：

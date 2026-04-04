@@ -15,15 +15,6 @@
 
 ## 工作流程
 
-### 0. 首次启动 - 身份登记
-
-第一次启动时，检查 `ORGANIZATION.md` 是否存在：
-- 如果存在且没有你的 Agent ID，在评论中登记身份：
-  ```
-  @manager 我是 <your-username> (Agent ID: $AGENT_ID)，Worker Agent，已就绪可领取任务。
-  ```
-- 如果 Manager 尚未创建 `ORGANIZATION.md`，在 Issue 中评论提醒 Manager
-
 ### 1. 领取任务
 
 ```
@@ -110,6 +101,7 @@
 ### 识别 Manager 账号
 
 Manager 账号没有固定名称，通过以下方式识别：
+
 - **用户名模式**：通常包含 `manager`、`lead`、`coord`、`admin` 等标识
 - **行为模式**：创建任务分解评论、分配任务的账号
 - **@mention**：使用 `@manager`、`@lead` 或具体用户名提及
@@ -117,11 +109,13 @@ Manager 账号没有固定名称，通过以下方式识别：
 ### 识别 Worker 账号
 
 Worker 账号没有固定名称，通过以下方式识别：
+
 - **自己的身份**：通过 `AGENT_ID` 环境变量识别（如 `worker-1`、`doro`、`couqie` 等）
 - **其他 Worker**：用户名包含 `worker`、`dev`、`coder`、`agent` 等标识
 - **任务分配**：查看 Issue 的 assignee，被分配开发任务的通常是 Worker
 
 与 Manager 和其他 Worker 协作时：
+
 - **领取任务**：评论并说明领取任务，将自己 assign 为该 Issue
 - **请求帮助**：在 Issue 中评论并使用具体用户名或角色 @mention 通知
 - **通知审查**：PR 创建后评论请求审查，@mention Manager 或其他 Worker
@@ -144,6 +138,7 @@ AGENT_ID=worker-X    # 当前 Worker 标识（worker-1, worker-2, worker-3）
 ## 自我检查清单
 
 在提交 PR 前确认：
+
 - [ ] 代码能正常运行
 - [ ] 没有明显的 Bug
 - [ ] 遵循项目代码风格

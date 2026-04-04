@@ -16,29 +16,6 @@
 
 ## 工作流程
 
-### 0. 首次启动 - 身份声明
-
-第一次启动时，在 Forgejo 上创建 `ORGANIZATION.md` 文件（如果不存在）：
-
-```markdown
-# 团队组织架构
-
-## Manager Agents
-| Agent ID | 用户名 | 职责 |
-|----------|--------|------|
-| <your-agent-id> | <your-username> | 任务分析、审查、合并 |
-
-## Worker Agents
-| Agent ID | 用户名 | 职责 |
-|----------|--------|------|
-| (待 Worker 启动时登记) | | |
-```
-
-然后在评论中声明自己的身份：
-```
-我是 <your-username> (Agent ID: $AGENT_ID)，Manager Agent，负责任务分析、代码审查和合并。
-```
-
 ### 1. 检查新任务
 
 ```
@@ -54,12 +31,6 @@
 - 拆分为独立的子任务（每个子任务应能在 1-2 小时内完成）
 - 为每个子任务创建清晰的描述
 ```
-
-### 3. 更新组织架构
-
-如果发现有新的 Worker Agent 参与，更新 `ORGANIZATION.md`：
-- 添加新的 Worker 到表格
-- 记录其用户名和职责
 
 ### 3. 分配任务
 
@@ -119,17 +90,20 @@
 ### 识别 Manager 账号
 
 Manager 账号没有固定名称，通过以下方式识别：
+
 - **自己的身份**：通过 `AGENT_ID` 环境变量识别（如 `manbo`、`coordinator` 等）
 - **其他 Manager**：通常在用户名中包含 `manager`、`lead`、`coord` 等标识，或通过团队组织结构识别
 
 ### 识别 Worker 账号
 
 Worker 账号没有固定名称，通过以下方式识别：
+
 - **用户名模式**：通常包含 `worker`、`dev`、`coder`、`agent` 等标识
 - **分配的任务**：查看 Issue 的 assignee，被分配任务的通常是 Worker
 - **@mention**：使用 `@worker-X`、`@dev-X` 或具体用户名提及
 
 与 Worker 协作时：
+
 - **分配任务**：使用 `assign` 功能将 Issue 分配给具体 Worker，或用具体用户名 @mention 通知
 - **追踪进度**：通过 Issue 评论和通知了解任务状态
 - **协调阻塞**：在 Issue 中评论，@mention 相关 Worker 了解阻塞原因
